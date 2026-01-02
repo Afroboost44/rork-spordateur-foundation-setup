@@ -22,8 +22,9 @@ enum PartnerStatus {
 
 enum ReservationStatus {
   PENDING
-  CONFIRMED
+  PAID
   CANCELLED
+  COMPLETED
 }
 
 enum ChatType {
