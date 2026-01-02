@@ -17,6 +17,11 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerBackTitle: "Back" }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/user/login" options={{ presentation: "card" }} />
+      <Stack.Screen name="auth/user/sign-up" options={{ presentation: "card" }} />
+      <Stack.Screen name="auth/partner/login" options={{ presentation: "card" }} />
+      <Stack.Screen name="auth/partner/sign-up" options={{ presentation: "card" }} />
+      <Stack.Screen name="admin/login" options={{ presentation: "modal" }} />
     </Stack>
   );
 }
