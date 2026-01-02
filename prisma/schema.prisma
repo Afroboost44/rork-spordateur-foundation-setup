@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  INVISIBLE
+}
+
+enum PartnerStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+
+enum ReservationStatus {
+  PENDING
+  PAID
+  CANCELLED
+  COMPLETED
+}
+
+enum ChatType {
+  INTERNAL
+  EXTERNAL
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String
+  bio           String?
+  age           Int
+  gender        String
+  location      String
+  images        String[]
+  sports        String[]
+  status        UserStatus     @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  reservations  Reservation[]
+  matchesFrom   Match[]        @relation("MatchFrom")
+  matchesTo     Match[]        @relation("MatchTo")
+  chatsCreated  Chat[]         @relation("ChatCreator")
+  chatsJoined   Chat[]         @relation("ChatParticipant")
+  messages      Message[]
+}
+
+model Partner {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  companyName   String
+  description   String?
+  websiteLink   String?
+  address       String
+  status        PartnerStatus  @default(PENDING)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  offers        Offer[]
+}
+
+model Offer {
+  id            String         @id @default(cuid())
+  partnerId     String
+  partner       Partner        @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  
+  title         String
+  price         Float
+  description   String
+  datetime      DateTime
+  location      String
+  imageUrl      String
+  sport         String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  reservations  Reservation[]
+}
+
+model Reservation {
+  id            String            @id @default(cuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offerId       String
+  offer         Offer             @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  
+  status        ReservationStatus @default(PENDING)
+  paymentId     String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Match {
+  id            String         @id @default(cuid())
+  fromUserId    String
+  fromUser      User           @relation("MatchFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId      String
+  toUser        User           @relation("MatchTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  
+  isMatch       Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  
+  @@unique([fromUserId, toUserId])
+}
+
+model Chat {
+  id            String         @id @default(cuid())
+  type          ChatType
+  creatorId     String
+  creator       User           @relation("ChatCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  participantId String?
+  participant   User?          @relation("ChatParticipant", fields: [participantId], references: [id], onDelete: SetNull)
+  
+  secureLink    String?        @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  messages      Message[]
+}
+
+model Message {
+  id            String         @id @default(cuid())
+  chatId        String
+  chat          Chat           @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId      String
+  sender        User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  content       String
+  createdAt     DateTime       @default(now())
+}
+
+model Admin {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String
+  name          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
