@@ -5,6 +5,7 @@ import superjson from "superjson";
 let prisma: any = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { PrismaClient } = require("@prisma/client");
   prisma = new PrismaClient();
 } catch {
@@ -12,6 +13,12 @@ try {
 }
 
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
+  if (!prisma) {
+    throw new Error(
+      'Database not configured. Please set DATABASE_URL environment variable and run: npx prisma generate && npx prisma db push'
+    );
+  }
+  
   return {
     req: opts.req,
     prisma,

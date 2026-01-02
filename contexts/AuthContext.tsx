@@ -53,9 +53,13 @@ export const [AuthProvider, useAuth] = createContextHook<AuthContextValue>(() =>
           setUserState(userData);
           await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
           console.log('[AUTH] Test user logged in successfully:', userData.id);
-        } catch (loginError) {
+        } catch (loginError: any) {
           console.error('[AUTH] Auto-login failed:', loginError);
-          console.log('[AUTH] Please run: npx prisma db seed');
+          if (loginError.message?.includes('Database not configured')) {
+            console.log('[AUTH] Database not configured. Please set up the database first.');
+          } else {
+            console.log('[AUTH] Please run: npx prisma db seed');
+          }
         }
       }
     } catch (error) {
