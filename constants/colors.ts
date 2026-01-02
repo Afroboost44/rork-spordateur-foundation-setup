@@ -5,6 +5,10 @@ const colors = {
     gradientStart: '#000000',
     gradientEnd: '#141416',
   },
+  brand: {
+    primary: '#E83E8C',
+    secondary: '#8E44AD',
+  },
   primary: {
     magenta: '#E83E8C',
     purple: '#8E44AD',
@@ -12,7 +16,9 @@ const colors = {
   action: {
     green: '#2ECC71',
     red: '#E74C3C',
+    danger: '#E74C3C',
     yellow: '#F1C40F',
+    warning: '#F1C40F',
   },
   text: {
     main: '#FFFFFF',

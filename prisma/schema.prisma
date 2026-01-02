@@ -32,6 +32,11 @@ enum ChatType {
   EXTERNAL
 }
 
+enum SwipeDirection {
+  LIKE
+  PASS
+}
+
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
@@ -53,6 +58,8 @@ model User {
   chatsCreated  Chat[]         @relation("ChatCreator")
   chatsJoined   Chat[]         @relation("ChatParticipant")
   messages      Message[]
+  swipesFrom    Swipe[]        @relation("SwipeFrom")
+  swipesTo      Swipe[]        @relation("SwipeTo")
 }
 
 model Partner {
@@ -109,7 +116,22 @@ model Match {
   toUserId      String
   toUser        User           @relation("MatchTo", fields: [toUserId], references: [id], onDelete: Cascade)
   
-  isMatch       Boolean        @default(false)
+  chatId        String?        @unique
+  chat          Chat?          @relation(fields: [chatId], references: [id], onDelete: SetNull)
+  
+  createdAt     DateTime       @default(now())
+  
+  @@unique([fromUserId, toUserId])
+}
+
+model Swipe {
+  id            String         @id @default(cuid())
+  fromUserId    String
+  fromUser      User           @relation("SwipeFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId      String
+  toUser        User           @relation("SwipeTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  
+  direction     SwipeDirection
   createdAt     DateTime       @default(now())
   
   @@unique([fromUserId, toUserId])
@@ -128,6 +150,7 @@ model Chat {
   updatedAt     DateTime       @updatedAt
   
   messages      Message[]
+  match         Match?
 }
 
 model Message {
