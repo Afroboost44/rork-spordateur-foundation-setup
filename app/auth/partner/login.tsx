@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Stack, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { trpc } from "@/lib/trpc";
 import colors from "@/constants/colors";
 
@@ -17,31 +18,17 @@ export default function PartnerLoginScreen() {
   const [password, setPassword] = useState("");
 
   const loginMutation = trpc.auth.partnerLogin.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Partner logged in:", data);
       
-      if (data.status === "PENDING") {
-        Alert.alert(
-          "Compte en attente",
-          "Votre compte est en attente de validation. Vous serez notifié par email.",
-          [{ text: "OK" }]
-        );
+      await AsyncStorage.setItem('partner', JSON.stringify(data));
+      
+      if (data.status === "PENDING" || data.status === "SUSPENDED" || data.status === "REJECTED") {
+        router.replace("/partner/dashboard");
       } else if (data.status === "APPROVED") {
         Alert.alert("Bienvenue !", `Connecté en tant que ${data.companyName}`, [
-          { text: "OK", onPress: () => router.replace("/(tabs)") },
+          { text: "OK", onPress: () => router.replace("/partner/dashboard") },
         ]);
-      } else if (data.status === "SUSPENDED") {
-        Alert.alert(
-          "Compte suspendu",
-          "Votre compte a été suspendu. Contactez le support.",
-          [{ text: "OK" }]
-        );
-      } else if (data.status === "REJECTED") {
-        Alert.alert(
-          "Compte rejeté",
-          "Votre demande de partenariat a été rejetée. Contactez le support pour plus d'informations.",
-          [{ text: "OK" }]
-        );
       }
     },
     onError: (error) => {
