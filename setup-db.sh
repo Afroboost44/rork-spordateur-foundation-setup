@@ -3,6 +3,9 @@
 echo "🔧 Setting up Spordateur database..."
 echo ""
 
+# Load DATABASE_URL from .env file
+export $(cat .env | grep -v '^#' | xargs)
+
 echo "📦 Step 1: Generating Prisma Client..."
 npx prisma generate
 if [ $? -ne 0 ]; then
