@@ -22,9 +22,8 @@ enum PartnerStatus {
 
 enum ReservationStatus {
   PENDING
-  PAID
+  CONFIRMED
   CANCELLED
-  COMPLETED
 }
 
 enum ChatType {
@@ -35,6 +34,7 @@ enum ChatType {
 model User {
   id            String         @id @default(cuid())
   email         String         @unique
+  passwordHash  String
   name          String
   bio           String?
   age           Int
@@ -57,6 +57,7 @@ model User {
 model Partner {
   id            String         @id @default(cuid())
   email         String         @unique
+  passwordHash  String
   companyName   String
   description   String?
   websiteLink   String?
@@ -80,6 +81,7 @@ model Offer {
   location      String
   imageUrl      String
   sport         String
+  isActive      Boolean        @default(true)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
