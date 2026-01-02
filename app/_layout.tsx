@@ -23,6 +23,10 @@ function RootLayoutNav() {
       <Stack.Screen name="auth/partner/login" options={{ presentation: "card" }} />
       <Stack.Screen name="auth/partner/sign-up" options={{ presentation: "card" }} />
       <Stack.Screen name="admin/login" options={{ presentation: "modal" }} />
+      <Stack.Screen name="partner" options={{ headerShown: false }} />
+      <Stack.Screen name="user" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/external/[token]" options={{ headerShown: false }} />
     </Stack>
   );
 }
