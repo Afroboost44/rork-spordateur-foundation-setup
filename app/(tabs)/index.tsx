@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { Heart, X } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
@@ -22,14 +23,16 @@ const CARD_HEIGHT = height * 0.65;
 
 export default function DiscoverScreen() {
   const router = useRouter();
-  const [currentUserId] = useState('user123');
+  const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [matchData, setMatchData] = useState<any>(null);
 
   const { data: users, isLoading, refetch } = trpc.matching.getFeed.useQuery({
-    currentUserId,
+    currentUserId: user?.id || '',
     limit: 20,
+  }, {
+    enabled: !!user?.id,
   });
 
   const swipeMutation = trpc.matching.swipe.useMutation({
@@ -53,7 +56,7 @@ export default function DiscoverScreen() {
     console.log('[DISCOVER] Swiping:', direction, 'on user:', currentUser.id);
 
     swipeMutation.mutate({
-      currentUserId,
+      currentUserId: user?.id || '',
       targetUserId: currentUser.id,
       direction,
     });

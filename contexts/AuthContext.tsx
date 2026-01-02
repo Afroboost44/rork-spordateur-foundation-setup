@@ -1,6 +1,7 @@
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
+import { trpc } from '@/lib/trpc';
 
 interface User {
   id: string;
@@ -20,9 +21,12 @@ const STORAGE_KEY = '@spordateur_user';
 export const [AuthProvider, useAuth] = createContextHook<AuthContextValue>(() => {
   const [user, setUserState] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const loginMutation = trpc.auth.userLogin.useMutation();
 
   useEffect(() => {
     loadUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadUser = async () => {
@@ -33,14 +37,26 @@ export const [AuthProvider, useAuth] = createContextHook<AuthContextValue>(() =>
         setUserState(parsed);
         console.log('[AUTH] User loaded from storage:', parsed.email);
       } else {
-        console.log('[AUTH] No user found in storage, using default test user');
-        const defaultUser = {
-          id: 'user1@spordateur.com',
-          email: 'user1@spordateur.com',
-          name: 'Test User',
-        };
-        setUserState(defaultUser);
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
+        console.log('[AUTH] No user found in storage, logging in with test user...');
+        try {
+          const loginResult = await loginMutation.mutateAsync({
+            email: 'user1@spordateur.com',
+            password: 'password123',
+          });
+          
+          const userData = {
+            id: loginResult.id,
+            email: loginResult.email,
+            name: loginResult.name,
+          };
+          
+          setUserState(userData);
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+          console.log('[AUTH] Test user logged in successfully:', userData.id);
+        } catch (loginError) {
+          console.error('[AUTH] Auto-login failed:', loginError);
+          console.log('[AUTH] Please run: npx prisma db seed');
+        }
       }
     } catch (error) {
       console.error('[AUTH] Error loading user:', error);

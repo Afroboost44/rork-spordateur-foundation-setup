@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,16 @@ import { useRouter } from 'expo-router';
 import { MessageCircle } from 'lucide-react-native';
 import colors from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function MatchesScreen() {
   const router = useRouter();
-  const [currentUserId] = useState('user123');
+  const { user } = useAuth();
 
   const { data: matches, isLoading } = trpc.matching.getMatches.useQuery({
-    currentUserId,
+    currentUserId: user?.id || '',
+  }, {
+    enabled: !!user?.id,
   });
 
   const handleMatchPress = (chatId: string | null | undefined) => {
