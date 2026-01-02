@@ -135,4 +135,44 @@ export const offersRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  getAvailable: publicProcedure.query(async ({ ctx }) => {
+    console.log('[OFFERS] Fetching available offers');
+
+    const offers = await ctx.prisma.offer.findMany({
+      where: {
+        isActive: true,
+        partner: {
+          status: "APPROVED",
+        },
+        datetime: {
+          gte: new Date(),
+        },
+      },
+      include: {
+        partner: {
+          select: {
+            companyName: true,
+          },
+        },
+      },
+      orderBy: {
+        datetime: "asc",
+      },
+    });
+
+    console.log('[OFFERS] Found available offers:', offers.length);
+
+    return offers.map((offer: any) => ({
+      id: offer.id,
+      title: offer.title,
+      price: offer.price,
+      description: offer.description,
+      datetime: offer.datetime,
+      location: offer.location,
+      imageUrl: offer.imageUrl,
+      sport: offer.sport,
+      partnerName: offer.partner.companyName,
+    }));
+  }),
 });

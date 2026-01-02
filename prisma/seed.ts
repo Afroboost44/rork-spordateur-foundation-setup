@@ -45,6 +45,30 @@ const BIOS = [
 const FIRST_NAMES_M = ['Lucas', 'Thomas', 'Hugo', 'Louis', 'Nathan', 'Arthur', 'Jules', 'Léo', 'Gabriel', 'Maxime'];
 const FIRST_NAMES_F = ['Emma', 'Léa', 'Chloé', 'Manon', 'Sarah', 'Laura', 'Clara', 'Camille', 'Alice', 'Julie'];
 
+const PARTNERS = [
+  { name: 'FitZone Geneva', description: 'Centre de fitness premium avec équipements dernière génération', address: 'Rue du Rhône 45, Genève', sport: 'Fitness' },
+  { name: 'Tennis Club Lausanne', description: 'Club de tennis avec courts couverts et extérieurs', address: 'Avenue de Rhodanie 12, Lausanne', sport: 'Tennis' },
+  { name: 'Yoga Studio Montreux', description: 'Studio de yoga et méditation face au lac', address: 'Grand Rue 23, Montreux', sport: 'Yoga' },
+  { name: 'Escalade Vertical', description: 'Salle d\'escalade indoor avec murs de 15m', address: 'Chemin des Sports 8, Fribourg', sport: 'Escalade' },
+  { name: 'SwissBoxing Academy', description: 'École de boxe et sports de combat', address: 'Route de Berne 56, Neuchâtel', sport: 'Boxe' },
+];
+
+const OFFER_TEMPLATES = [
+  { title: 'Session découverte fitness', description: 'Découvrez notre centre avec un coach personnel pendant 1h', price: 35 },
+  { title: 'Cours de tennis en duo', description: 'Cours de tennis pour 2 personnes avec un instructeur pro', price: 80 },
+  { title: 'Yoga sunrise session', description: 'Séance de yoga matinale avec vue sur le lac', price: 25 },
+  { title: 'Initiation escalade', description: 'Première escalade avec équipement et supervision inclus', price: 45 },
+  { title: 'Boxe sparring session', description: 'Entraînement de boxe en binôme avec coach', price: 50 },
+];
+
+const OFFER_IMAGES = [
+  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=800&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=800&q=80&auto=format&fit=crop',
+];
+
 async function seed() {
   console.log('🌱 Starting seed...');
 
@@ -98,6 +122,73 @@ async function seed() {
 
   console.log(`🎉 Seed completed! Created ${users.length} new users.`);
   console.log('📧 All users use password: password123');
+
+  console.log('\n🏢 Creating partners...');
+  const partners = [];
+
+  for (let i = 0; i < PARTNERS.length; i++) {
+    const partnerData = PARTNERS[i];
+    
+    try {
+      const partner = await prisma.partner.create({
+        data: {
+          email: `partner${i + 1}@spordateur.com`,
+          passwordHash: hashedPassword,
+          companyName: partnerData.name,
+          description: partnerData.description,
+          address: partnerData.address,
+          status: 'APPROVED',
+        },
+      });
+      
+      partners.push({ ...partner, sport: partnerData.sport });
+      console.log(`✅ Created partner: ${partner.companyName}`);
+    } catch {
+      console.log(`⚠️  Partner partner${i + 1}@spordateur.com already exists, skipping...`);
+    }
+  }
+
+  console.log('\n🎯 Creating offers...');
+  let offersCreated = 0;
+
+  for (let i = 0; i < partners.length; i++) {
+    const partner = partners[i];
+    const offerTemplate = OFFER_TEMPLATES[i];
+    
+    const daysAhead = [3, 7, 10, 14, 21];
+    
+    for (let d = 0; d < 2; d++) {
+      const offerDate = new Date();
+      offerDate.setDate(offerDate.getDate() + daysAhead[d]);
+      offerDate.setHours(10 + (d * 2), 0, 0, 0);
+
+      try {
+        await prisma.offer.create({
+          data: {
+            partnerId: partner.id,
+            title: offerTemplate.title,
+            price: offerTemplate.price,
+            description: offerTemplate.description,
+            datetime: offerDate,
+            location: partner.address,
+            imageUrl: OFFER_IMAGES[i],
+            sport: partner.sport,
+            isActive: true,
+          },
+        });
+        
+        offersCreated++;
+        console.log(`✅ Created offer: ${offerTemplate.title} for ${partner.companyName}`);
+      } catch {
+        console.log(`⚠️  Offer already exists, skipping...`);
+      }
+    }
+  }
+
+  console.log(`\n🎉 Seeding complete!`);
+  console.log(`   👥 Users: ${users.length}`);
+  console.log(`   🏢 Partners: ${partners.length}`);
+  console.log(`   🎯 Offers: ${offersCreated}`);
 }
 
 seed()
