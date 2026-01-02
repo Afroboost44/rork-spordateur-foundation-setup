@@ -133,8 +133,15 @@ async function seed() {
     }
   }
 
-  console.log(`🎉 Seed completed! Created ${users.length} new users.`);
+  console.log(`\n🎉 Seed completed! Created ${users.length} new users.`);
   console.log('📧 All users use password: password123');
+  
+  if (users.length > 0) {
+    console.log('\n🔑 TEST USER IDs (use these in your app):');
+    console.log(`   User 1: ${users[0].id} (${users[0].email})`);
+    console.log(`   User 2: ${users[1]?.id} (${users[1]?.email})`);
+    console.log('\n💡 Copy the User 1 ID and use it in discover/matches/chat screens for testing');
+  }
 
   console.log('\n🏢 Creating partners...');
   const partners = [];

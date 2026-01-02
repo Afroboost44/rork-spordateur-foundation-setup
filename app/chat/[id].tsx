@@ -16,21 +16,23 @@ import { useState, useEffect, useRef } from 'react';
 import { trpc } from '@/lib/trpc';
 import colors from '@/constants/colors';
 import { Heart, Send, Link as LinkIcon, Calendar } from 'lucide-react-native';
+import { useAuth } from '@/contexts/AuthContext';
 import * as Clipboard from 'expo-clipboard';
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
   const [message, setMessage] = useState<string>('');
   const [showLinkModal, setShowLinkModal] = useState<boolean>(false);
   const [generatedLink, setGeneratedLink] = useState<string>('');
   const flatListRef = useRef<FlatList>(null);
 
-  const userId = 'clzj8x9y50000j5op8abc1234';
-
   const { data, isLoading, refetch } = trpc.chat.getMessages.useQuery({
     chatId: id,
-    userId: userId,
+    userId: user?.id,
+  }, {
+    enabled: !!user?.id && !!id,
   });
 
   const sendMessageMutation = trpc.chat.sendMessage.useMutation({
@@ -75,7 +77,7 @@ export default function ChatScreen() {
     sendMessageMutation.mutate({
       chatId: id,
       content: message.trim(),
-      senderId: userId,
+      senderId: user?.id || '',
     });
   };
 
@@ -83,7 +85,7 @@ export default function ChatScreen() {
     console.log('[CHAT] Generating external link');
     generateLinkMutation.mutate({
       chatId: id,
-      userId: userId,
+      userId: user?.id || '',
     });
   };
 
@@ -101,7 +103,7 @@ export default function ChatScreen() {
   }
 
   const otherUser =
-    data?.chat.creator.id === userId
+    data?.chat.creator.id === user?.id
       ? data?.chat.participant
       : data?.chat.creator;
 
@@ -143,7 +145,7 @@ export default function ChatScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.messagesList}
         renderItem={({ item }) => {
-          const isMine = item.senderId === userId;
+          const isMine = item.senderId === user?.id;
           return (
             <View
               style={[
