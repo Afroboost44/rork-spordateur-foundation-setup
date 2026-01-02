@@ -123,7 +123,7 @@ model Chat {
   participantId String?
   participant   User?          @relation("ChatParticipant", fields: [participantId], references: [id], onDelete: SetNull)
   
-  secureLink    String?        @unique
+  guestToken    String?        @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
