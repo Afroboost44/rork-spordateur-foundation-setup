@@ -27,13 +27,25 @@ export const chatRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       console.log('[CHAT] Fetching messages for chat:', input.chatId);
 
-      const chat = await ctx.prisma.chat.findUnique({
-        where: { id: input.chatId },
-        include: {
-          creator: true,
-          participant: true,
-        },
-      });
+      let chat;
+
+      if (input.guestToken) {
+        chat = await ctx.prisma.chat.findUnique({
+          where: { guestToken: input.guestToken },
+          include: {
+            creator: true,
+            participant: true,
+          },
+        });
+      } else {
+        chat = await ctx.prisma.chat.findUnique({
+          where: { id: input.chatId },
+          include: {
+            creator: true,
+            participant: true,
+          },
+        });
+      }
 
       if (!chat) {
         throw new TRPCError({

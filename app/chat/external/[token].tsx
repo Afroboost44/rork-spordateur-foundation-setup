@@ -22,10 +22,15 @@ export default function ExternalChatScreen() {
   const flatListRef = useRef<FlatList>(null);
   const [guestUserId, setGuestUserId] = useState<string>('');
 
-  const { data, isLoading, error, refetch } = trpc.chat.getMessages.useQuery({
-    chatId: '',
-    guestToken: token,
-  });
+  const { data, isLoading, error, refetch } = trpc.chat.getMessages.useQuery(
+    {
+      chatId: '',
+      guestToken: token,
+    },
+    {
+      enabled: !!token,
+    }
+  );
 
   const sendMessageMutation = trpc.chat.sendMessage.useMutation({
     onSuccess: () => {
